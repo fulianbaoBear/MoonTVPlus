@@ -339,6 +339,10 @@ function PlayPageClient() {
     count: number;
     star_count: number;
   } | null>(null);
+  // 豆瓣额外信息
+  const [doubanCardSubtitle, setDoubanCardSubtitle] = useState<string>('');
+  const [doubanAka, setDoubanAka] = useState<string[]>([]);
+  const [doubanYear, setDoubanYear] = useState<string>(''); // 从 pubdate 提取的年份
   // 当前源和ID
   const [currentSource, setCurrentSource] = useState(
     searchParams.get('source') || ''
@@ -443,11 +447,16 @@ function PlayPageClient() {
     const fetchDoubanRating = async () => {
       if (!videoDoubanId || videoDoubanId === 0) {
         setDoubanRating(null);
+        setDoubanCardSubtitle('');
+        setDoubanAka([]);
+        setDoubanYear('');
         return;
       }
 
       try {
         const doubanData = await getDoubanDetail(videoDoubanId.toString());
+
+        // 设置评分
         if (doubanData.rating) {
           setDoubanRating({
             value: doubanData.rating.value,
@@ -457,9 +466,32 @@ function PlayPageClient() {
         } else {
           setDoubanRating(null);
         }
+
+        // 设置 card_subtitle
+        if (doubanData.card_subtitle) {
+          setDoubanCardSubtitle(doubanData.card_subtitle);
+        }
+
+        // 设置 aka（别名）
+        if (doubanData.aka && doubanData.aka.length > 0) {
+          setDoubanAka(doubanData.aka);
+        }
+
+        // 处理 pubdate 获取年份
+        if (doubanData.pubdate && doubanData.pubdate.length > 0) {
+          const pubdateStr = doubanData.pubdate[0];
+          // 删除括号中的内容，包括括号
+          const yearMatch = pubdateStr.replace(/\([^)]*\)/g, '').trim();
+          if (yearMatch) {
+            setDoubanYear(yearMatch);
+          }
+        }
       } catch (error) {
         console.error('获取豆瓣评分失败:', error);
         setDoubanRating(null);
+        setDoubanCardSubtitle('');
+        setDoubanAka([]);
+        setDoubanYear('');
       }
     };
 
@@ -4077,7 +4109,21 @@ function PlayPageClient() {
             <div className='p-6 flex flex-col min-h-0'>
               {/* 标题 */}
               <h1 className='text-3xl font-bold mb-2 tracking-wide flex items-center flex-shrink-0 text-center md:text-left w-full flex-wrap gap-2'>
-                <span>{videoTitle || '影片标题'}</span>
+                <span className={doubanAka.length > 0 ? 'relative group cursor-help' : ''}>
+                  {videoTitle || '影片标题'}
+                  {/* aka 悬浮提示 */}
+                  {doubanAka.length > 0 && (
+                    <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 dark:bg-gray-900 text-white text-sm rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out whitespace-nowrap z-[100] pointer-events-none'>
+                      <div className='font-semibold text-xs text-gray-400 mb-1'>又名：</div>
+                      {doubanAka.map((name, index) => (
+                        <div key={index} className='text-sm'>
+                          {name}
+                        </div>
+                      ))}
+                      <div className='absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800 dark:border-t-gray-900'></div>
+                    </div>
+                  )}
+                </span>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -4162,8 +4208,9 @@ function PlayPageClient() {
                     {detail.class}
                   </span>
                 )}
-                {(detail?.year || videoYear) && (
-                  <span>{detail?.year || videoYear}</span>
+                {/* 优先使用 doubanYear，如果没有则使用 detail.year 或 videoYear */}
+                {(doubanYear || detail?.year || videoYear) && (
+                  <span>{doubanYear || detail?.year || videoYear}</span>
                 )}
                 {detail?.source_name && (
                   <span className='border border-gray-500/60 px-2 py-[1px] rounded'>
@@ -4173,12 +4220,18 @@ function PlayPageClient() {
                 {detail?.type_name && <span>{detail.type_name}</span>}
               </div>
               {/* 剧情简介 */}
-              {detail?.desc && (
+              {(doubanCardSubtitle || detail?.desc) && (
                 <div
                   className='mt-0 text-base leading-relaxed opacity-90 overflow-y-auto pr-2 flex-1 min-h-0 scrollbar-hide'
                   style={{ whiteSpace: 'pre-line' }}
                 >
-                  {detail.desc}
+                  {/* card_subtitle 在前，desc 在后 */}
+                  {doubanCardSubtitle && (
+                    <div className='mb-3 pb-3 border-b border-gray-300 dark:border-gray-700'>
+                      {doubanCardSubtitle}
+                    </div>
+                  )}
+                  {detail?.desc}
                 </div>
               )}
             </div>
