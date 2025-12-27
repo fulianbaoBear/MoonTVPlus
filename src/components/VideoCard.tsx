@@ -51,6 +51,9 @@ export interface VideoCardProps {
   isUpcoming?: boolean; // 是否为即将上映
   seasonNumber?: number; // 季度编号
   seasonName?: string; // 季度名称
+  orientation?: 'vertical' | 'horizontal'; // 卡片方向
+  playTime?: number; // 当前播放时间（秒）
+  totalTime?: number; // 总时长（秒）
 }
 
 export type VideoCardHandle = {
@@ -84,6 +87,9 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(function VideoCard
     isUpcoming = false,
     seasonNumber,
     seasonName,
+    orientation = 'vertical',
+    playTime,
+    totalTime,
   }: VideoCardProps,
   ref
 ) {
@@ -584,7 +590,11 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(function VideoCard
       >
         {/* 海报容器 */}
         <div
-          className={`relative aspect-[2/3] overflow-hidden rounded-lg ${origin === 'live' ? 'ring-1 ring-gray-300/80 dark:ring-gray-600/80' : ''}`}
+          className={`relative overflow-hidden rounded-lg ${origin === 'live' ? 'ring-1 ring-gray-300/80 dark:ring-gray-600/80' : ''} ${
+            orientation === 'horizontal'
+              ? 'aspect-[3/2]'
+              : 'aspect-[2/3]'
+          }`}
           style={{
             WebkitUserSelect: 'none',
             userSelect: 'none',
@@ -596,13 +606,13 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(function VideoCard
           }}
         >
           {/* 骨架屏 */}
-          {!isLoading && <ImagePlaceholder aspectRatio='aspect-[2/3]' />}
+          {!isLoading && <ImagePlaceholder aspectRatio={orientation === 'horizontal' ? 'aspect-[3/2]' : 'aspect-[2/3]'} />}
           {/* 图片 */}
           <Image
             src={processImageUrl(actualPoster)}
             alt={actualTitle}
             fill
-            className={origin === 'live' ? 'object-contain' : 'object-cover'}
+            className={origin === 'live' ? 'object-contain' : orientation === 'horizontal' ? 'object-cover object-center' : 'object-cover'}
             referrerPolicy='no-referrer'
             loading='lazy'
             onLoadingComplete={() => setIsLoading(true)}
@@ -816,7 +826,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(function VideoCard
             </div>
           )}
 
-          {actualEpisodes && actualEpisodes > 1 && (
+          {actualEpisodes && actualEpisodes > 1 && orientation === 'vertical' && (
             <div
               className='absolute top-2 right-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-md transition-all duration-300 ease-out group-hover:scale-110'
               style={{
@@ -999,112 +1009,13 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(function VideoCard
               </div>
             );
           })()}
-        </div>
 
-        {/* 进度条 */}
-        {config.showProgress && progress !== undefined && (
-          <div
-            className='mt-1 h-1 w-full bg-gray-200 rounded-full overflow-hidden'
-            style={{
-              WebkitUserSelect: 'none',
-              userSelect: 'none',
-              WebkitTouchCallout: 'none',
-            } as React.CSSProperties}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              return false;
-            }}
-          >
-            <div
-              className='h-full bg-green-500 transition-all duration-500 ease-out'
-              style={{
-                width: `${progress}%`,
-                WebkitUserSelect: 'none',
-                userSelect: 'none',
-                WebkitTouchCallout: 'none',
-              } as React.CSSProperties}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                return false;
-              }}
-            />
-          </div>
-        )}
-
-        {/* 标题与来源 */}
-        <div
-          className='mt-2 text-center'
-          style={{
-            WebkitUserSelect: 'none',
-            userSelect: 'none',
-            WebkitTouchCallout: 'none',
-          } as React.CSSProperties}
-          onContextMenu={(e) => {
-            e.preventDefault();
-            return false;
-          }}
-        >
-          <div
-            className='relative'
-            style={{
-              WebkitUserSelect: 'none',
-              userSelect: 'none',
-              WebkitTouchCallout: 'none',
-            } as React.CSSProperties}
-          >
-            <span
-              className='block text-sm font-semibold truncate text-gray-900 dark:text-gray-100 transition-colors duration-300 ease-in-out group-hover:text-green-600 dark:group-hover:text-green-400 peer'
-              style={{
-                WebkitUserSelect: 'none',
-                userSelect: 'none',
-                WebkitTouchCallout: 'none',
-              } as React.CSSProperties}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                return false;
-              }}
-            >
-              {actualTitle}
-            </span>
-            {/* 自定义 tooltip */}
-            <div
-              className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-xs rounded-md shadow-lg opacity-0 invisible peer-hover:opacity-100 peer-hover:visible transition-all duration-200 ease-out delay-100 whitespace-nowrap pointer-events-none'
-              style={{
-                WebkitUserSelect: 'none',
-                userSelect: 'none',
-                WebkitTouchCallout: 'none',
-              } as React.CSSProperties}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                return false;
-              }}
-            >
-              {actualTitle}
+          {/* 横向模式：标题和进度条在海报上 */}
+          {orientation === 'horizontal' && (
+            <>
+              {/* 顶部渐变遮罩 - 用于标题背景 */}
               <div
-                className='absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800'
-                style={{
-                  WebkitUserSelect: 'none',
-                  userSelect: 'none',
-                  WebkitTouchCallout: 'none',
-                } as React.CSSProperties}
-              ></div>
-            </div>
-          </div>
-          {config.showSourceName && source_name && (
-            <span
-              className='block text-xs text-gray-500 dark:text-gray-400 mt-1'
-              style={{
-                WebkitUserSelect: 'none',
-                userSelect: 'none',
-                WebkitTouchCallout: 'none',
-              } as React.CSSProperties}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                return false;
-              }}
-            >
-              <span
-                className='inline-block border rounded px-2 py-0.5 border-gray-500/60 dark:border-gray-400/60 transition-all duration-300 ease-in-out group-hover:border-green-500/60 group-hover:text-green-600 dark:group-hover:text-green-400'
+                className='absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 via-black/40 to-transparent pt-2 pb-8 px-2'
                 style={{
                   WebkitUserSelect: 'none',
                   userSelect: 'none',
@@ -1115,14 +1026,307 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(function VideoCard
                   return false;
                 }}
               >
-                {origin === 'live' && (
-                  <Radio size={12} className="inline-block text-gray-500 dark:text-gray-400 mr-1.5" />
+                {/* 标题 */}
+                <div
+                  className='mb-1'
+                  style={{
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none',
+                    WebkitTouchCallout: 'none',
+                  } as React.CSSProperties}
+                >
+                  <span
+                    className='block text-sm font-bold truncate text-white'
+                    style={{
+                      WebkitUserSelect: 'none',
+                      userSelect: 'none',
+                      WebkitTouchCallout: 'none',
+                    } as React.CSSProperties}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      return false;
+                    }}
+                    title={actualTitle}
+                  >
+                    {actualTitle}
+                  </span>
+                </div>
+
+                {/* 集数信息 - 只有超过1集时才显示 */}
+                {currentEpisode && actualEpisodes && actualEpisodes > 1 && (
+                  <div
+                    className='text-xs text-white/90'
+                    style={{
+                      WebkitUserSelect: 'none',
+                      userSelect: 'none',
+                      WebkitTouchCallout: 'none',
+                    } as React.CSSProperties}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      return false;
+                    }}
+                  >
+                    第{currentEpisode}集 · 共{actualEpisodes}集
+                  </div>
                 )}
-                {source_name}
-              </span>
-            </span>
+              </div>
+
+              {/* 底部渐变遮罩 - 用于进度条背景 */}
+              <div
+                className='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent pt-8 pb-2 px-2'
+                style={{
+                  WebkitUserSelect: 'none',
+                  userSelect: 'none',
+                  WebkitTouchCallout: 'none',
+                } as React.CSSProperties}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  return false;
+                }}
+              >
+                {/* 进度条 */}
+                {config.showProgress && progress !== undefined && origin !== 'live' && (
+                  <div
+                    style={{
+                      WebkitUserSelect: 'none',
+                      userSelect: 'none',
+                      WebkitTouchCallout: 'none',
+                    } as React.CSSProperties}
+                  >
+                    {/* 来源和时长显示 - 在进度条上方 */}
+                    <div className='flex items-center justify-between mb-1'>
+                      {/* 时长显示 - 左侧 */}
+                      {from === 'playrecord' && playTime !== undefined && totalTime !== undefined && (
+                        <div
+                          className='text-[10px] text-white/80'
+                          style={{
+                            WebkitUserSelect: 'none',
+                            userSelect: 'none',
+                            WebkitTouchCallout: 'none',
+                          } as React.CSSProperties}
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            return false;
+                          }}
+                        >
+                          {(() => {
+                            const formatTime = (seconds: number) => {
+                              const mins = Math.floor(seconds / 60);
+                              const secs = Math.floor(seconds % 60);
+                              // 0分钟时不显示分钟
+                              if (mins === 0) {
+                                return `${secs}秒`;
+                              }
+                              return `${mins}分${secs}秒`;
+                            };
+                            return formatTime(playTime);
+                          })()}
+                        </div>
+                      )}
+
+                      {/* 来源 - 右侧 */}
+                      {config.showSourceName && source_name && (
+                        <span
+                          className={`inline-block border rounded px-1 py-0.5 text-[8px] text-white/90 bg-black/30 backdrop-blur-sm ${
+                            actualSource === 'openlist' ? 'border-yellow-500' : 'border-white/60'
+                          }`}
+                          style={{
+                            WebkitUserSelect: 'none',
+                            userSelect: 'none',
+                            WebkitTouchCallout: 'none',
+                          } as React.CSSProperties}
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            return false;
+                          }}
+                        >
+                          {source_name}
+                        </span>
+                      )}
+                    </div>
+                    <div
+                      className='h-1 w-full bg-white/20 rounded-full overflow-hidden'
+                      style={{
+                        WebkitUserSelect: 'none',
+                        userSelect: 'none',
+                        WebkitTouchCallout: 'none',
+                      } as React.CSSProperties}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        return false;
+                      }}
+                    >
+                      <div
+                        className='h-full bg-white transition-all duration-500 ease-out'
+                        style={{
+                          width: `${progress}%`,
+                          WebkitUserSelect: 'none',
+                          userSelect: 'none',
+                          WebkitTouchCallout: 'none',
+                        } as React.CSSProperties}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          return false;
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* 直播时只显示来源 */}
+                {origin === 'live' && config.showSourceName && source_name && (
+                  <div className='flex items-center justify-end'>
+                    <span
+                      className={`inline-block border rounded px-1 py-0.5 text-[8px] text-white/90 bg-black/30 backdrop-blur-sm ${
+                        origin === 'live' ? 'border-red-500' : actualSource === 'openlist' ? 'border-yellow-500' : 'border-white/60'
+                      }`}
+                      style={{
+                        WebkitUserSelect: 'none',
+                        userSelect: 'none',
+                        WebkitTouchCallout: 'none',
+                      } as React.CSSProperties}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        return false;
+                      }}
+                    >
+                      <Radio size={8} className="inline-block text-white/90 mr-0.5" />
+                      {source_name}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
+
+        {/* 竖向模式：进度条和标题在海报下方 */}
+        {orientation === 'vertical' && (
+          <>
+            {/* 进度条 */}
+            {config.showProgress && progress !== undefined && (
+              <div
+                className='mt-1 h-1 w-full bg-gray-200 rounded-full overflow-hidden'
+                style={{
+                  WebkitUserSelect: 'none',
+                  userSelect: 'none',
+                  WebkitTouchCallout: 'none',
+                } as React.CSSProperties}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  return false;
+                }}
+              >
+                <div
+                  className='h-full bg-green-500 transition-all duration-500 ease-out'
+                  style={{
+                    width: `${progress}%`,
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none',
+                    WebkitTouchCallout: 'none',
+                  } as React.CSSProperties}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    return false;
+                  }}
+                />
+              </div>
+            )}
+
+            {/* 标题与来源 */}
+            <div
+              className='mt-2 text-center'
+              style={{
+                WebkitUserSelect: 'none',
+                userSelect: 'none',
+                WebkitTouchCallout: 'none',
+              } as React.CSSProperties}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                return false;
+              }}
+            >
+              <div
+                className='relative'
+                style={{
+                  WebkitUserSelect: 'none',
+                  userSelect: 'none',
+                  WebkitTouchCallout: 'none',
+                } as React.CSSProperties}
+              >
+                <span
+                  className='block text-sm font-semibold truncate text-gray-900 dark:text-gray-100 transition-colors duration-300 ease-in-out group-hover:text-green-600 dark:group-hover:text-green-400 peer'
+                  style={{
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none',
+                    WebkitTouchCallout: 'none',
+                  } as React.CSSProperties}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    return false;
+                  }}
+                >
+                  {actualTitle}
+                </span>
+                {/* 自定义 tooltip */}
+                <div
+                  className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-xs rounded-md shadow-lg opacity-0 invisible peer-hover:opacity-100 peer-hover:visible transition-all duration-200 ease-out delay-100 whitespace-nowrap pointer-events-none'
+                  style={{
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none',
+                    WebkitTouchCallout: 'none',
+                  } as React.CSSProperties}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    return false;
+                  }}
+                >
+                  {actualTitle}
+                  <div
+                    className='absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800'
+                    style={{
+                      WebkitUserSelect: 'none',
+                      userSelect: 'none',
+                      WebkitTouchCallout: 'none',
+                    } as React.CSSProperties}
+                  ></div>
+                </div>
+              </div>
+              {config.showSourceName && source_name && (
+                <span
+                  className='block text-xs text-gray-500 dark:text-gray-400 mt-1'
+                  style={{
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none',
+                    WebkitTouchCallout: 'none',
+                  } as React.CSSProperties}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    return false;
+                  }}
+                >
+                  <span
+                    className='inline-block border rounded px-2 py-0.5 border-gray-500/60 dark:border-gray-400/60 transition-all duration-300 ease-in-out group-hover:border-green-500/60 group-hover:text-green-600 dark:group-hover:text-green-400'
+                    style={{
+                      WebkitUserSelect: 'none',
+                      userSelect: 'none',
+                      WebkitTouchCallout: 'none',
+                    } as React.CSSProperties}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      return false;
+                    }}
+                  >
+                    {origin === 'live' && (
+                      <Radio size={12} className="inline-block text-gray-500 dark:text-gray-400 mr-1.5" />
+                    )}
+                    {source_name}
+                  </span>
+                </span>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* 操作菜单 - 支持右键和长按触发 */}

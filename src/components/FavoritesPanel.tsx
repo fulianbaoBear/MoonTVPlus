@@ -23,7 +23,7 @@ interface FavoriteItem {
   source_name?: string;
   currentEpisode?: number;
   search_title?: string;
-  origin?: string;
+  origin?: 'vod' | 'live';
 }
 
 interface FavoritesPanelProps {
@@ -97,14 +97,13 @@ export const FavoritesPanel: React.FC<FavoritesPanelProps> = ({
 
   // 监听收藏变化,实时移除已取消收藏的项目
   useEffect(() => {
-    const unsubscribe = subscribeToDataUpdates(async (event) => {
-      if (event === 'favoritesUpdated' && isOpen) {
-        // 获取最新的收藏列表
-        const allFavorites = await getAllFavorites();
-        const currentKeys = Object.keys(allFavorites);
-        
+    const unsubscribe = subscribeToDataUpdates('favoritesUpdated', async (newFavorites: Record<string, any>) => {
+      if (isOpen) {
+        // 获取最新的收藏列表的键
+        const currentKeys = Object.keys(newFavorites);
+
         // 过滤掉已经不在收藏中的项目
-        setFavoriteItems((prevItems) => 
+        setFavoriteItems((prevItems) =>
           prevItems.filter((item) => {
             const key = `${item.source}+${item.id}`;
             return currentKeys.includes(key);
