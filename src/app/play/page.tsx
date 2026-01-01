@@ -3528,7 +3528,7 @@ function PlayPageClient() {
         pip: true,
         autoSize: false,
         autoMini: false,
-        screenshot: false,
+        screenshot: true,
         setting: true,
         loop: false,
         flip: false,
@@ -4462,6 +4462,20 @@ function PlayPageClient() {
         // 标记播放器已就绪，触发 usePlaySync 设置事件监听器
         setPlayerReady(true);
         console.log('[PlayPage] Player ready, triggering sync setup');
+
+        // 控制截图按钮在小屏幕竖屏时隐藏
+        const updateScreenshotVisibility = () => {
+          const screenshotBtn = document.querySelector('.art-control-screenshot') as HTMLElement;
+          if (screenshotBtn) {
+            const isPortrait = window.innerHeight > window.innerWidth;
+            const isSmallScreen = window.innerWidth < 768;
+            screenshotBtn.style.display = (isPortrait && isSmallScreen) ? 'none' : '';
+          }
+        };
+        updateScreenshotVisibility();
+        window.addEventListener('resize', updateScreenshotVisibility);
+        artPlayerRef.current.on('fullscreen', updateScreenshotVisibility);
+        artPlayerRef.current.on('fullscreenWeb', updateScreenshotVisibility);
 
         // iOS 设备：动态调整弹幕设置面板位置，避免被遮挡
         if (isIOS && artPlayerRef.current) {
