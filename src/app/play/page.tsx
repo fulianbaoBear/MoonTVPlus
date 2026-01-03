@@ -6116,11 +6116,16 @@ function PlayPageClient() {
                         <button
                           onClick={(e) => {
                             e.preventDefault();
+                            // 如果当前是代理播放模式，使用原始 URL；否则使用当前 videoUrl
+                            let urlToUse = videoUrl;
+                            if (sourceProxyMode && detail?.episodes && currentEpisodeIndex < detail.episodes.length) {
+                              urlToUse = detail.episodes[currentEpisodeIndex];
+                            }
                             // 使用代理 URL
                             const tokenParam = proxyToken ? `&token=${encodeURIComponent(proxyToken)}` : '';
                             const proxyUrl = externalPlayerAdBlock
-                              ? `${window.location.origin}/api/proxy-m3u8?url=${encodeURIComponent(videoUrl)}&source=${encodeURIComponent(currentSource)}${tokenParam}`
-                              : videoUrl;
+                              ? `${window.location.origin}/api/proxy-m3u8?url=${encodeURIComponent(urlToUse)}&source=${encodeURIComponent(currentSource)}${tokenParam}`
+                              : urlToUse;
                             // URL encode 避免冒号被吃掉
                             window.open(`potplayer://${proxyUrl}`, '_blank');
                           }}
@@ -6141,11 +6146,16 @@ function PlayPageClient() {
                       <button
                         onClick={(e) => {
                           e.preventDefault();
+                          // 如果当前是代理播放模式，使用原始 URL；否则使用当前 videoUrl
+                          let urlToUse = videoUrl;
+                          if (sourceProxyMode && detail?.episodes && currentEpisodeIndex < detail.episodes.length) {
+                            urlToUse = detail.episodes[currentEpisodeIndex];
+                          }
                           // 使用代理 URL
                           const tokenParam = proxyToken ? `&token=${encodeURIComponent(proxyToken)}` : '';
                           const proxyUrl = externalPlayerAdBlock
-                            ? `${window.location.origin}/api/proxy-m3u8?url=${encodeURIComponent(videoUrl)}&source=${encodeURIComponent(currentSource)}${tokenParam}`
-                            : videoUrl;
+                            ? `${window.location.origin}/api/proxy-m3u8?url=${encodeURIComponent(urlToUse)}&source=${encodeURIComponent(currentSource)}${tokenParam}`
+                            : urlToUse;
                           // URL encode 避免冒号被吃掉
                           window.open(`vlc://${proxyUrl}`, '_blank');
                         }}
@@ -6166,11 +6176,16 @@ function PlayPageClient() {
                       <button
                         onClick={(e) => {
                           e.preventDefault();
+                          // 如果当前是代理播放模式，使用原始 URL；否则使用当前 videoUrl
+                          let urlToUse = videoUrl;
+                          if (sourceProxyMode && detail?.episodes && currentEpisodeIndex < detail.episodes.length) {
+                            urlToUse = detail.episodes[currentEpisodeIndex];
+                          }
                           // 使用代理 URL
                           const tokenParam = proxyToken ? `&token=${encodeURIComponent(proxyToken)}` : '';
                           const proxyUrl = externalPlayerAdBlock
-                            ? `${window.location.origin}/api/proxy-m3u8?url=${encodeURIComponent(videoUrl)}&source=${encodeURIComponent(currentSource)}${tokenParam}`
-                            : videoUrl;
+                            ? `${window.location.origin}/api/proxy-m3u8?url=${encodeURIComponent(urlToUse)}&source=${encodeURIComponent(currentSource)}${tokenParam}`
+                            : urlToUse;
                           // URL encode 避免冒号被吃掉
                           window.open(`mpv://${proxyUrl}`, '_blank');
                         }}
@@ -6191,11 +6206,16 @@ function PlayPageClient() {
                       <button
                         onClick={(e) => {
                           e.preventDefault();
+                          // 如果当前是代理播放模式，使用原始 URL；否则使用当前 videoUrl
+                          let urlToUse = videoUrl;
+                          if (sourceProxyMode && detail?.episodes && currentEpisodeIndex < detail.episodes.length) {
+                            urlToUse = detail.episodes[currentEpisodeIndex];
+                          }
                           // 使用代理 URL
                           const tokenParam = proxyToken ? `&token=${encodeURIComponent(proxyToken)}` : '';
                           const proxyUrl = externalPlayerAdBlock
-                            ? `${window.location.origin}/api/proxy-m3u8?url=${encodeURIComponent(videoUrl)}&source=${encodeURIComponent(currentSource)}${tokenParam}`
-                            : videoUrl;
+                            ? `${window.location.origin}/api/proxy-m3u8?url=${encodeURIComponent(urlToUse)}&source=${encodeURIComponent(currentSource)}${tokenParam}`
+                            : urlToUse;
                           window.open(
                             `intent://${proxyUrl}#Intent;package=com.mxtech.videoplayer.ad;S.title=${encodeURIComponent(
                               videoTitle
@@ -6220,11 +6240,16 @@ function PlayPageClient() {
                       <button
                         onClick={(e) => {
                           e.preventDefault();
+                          // 如果当前是代理播放模式，使用原始 URL；否则使用当前 videoUrl
+                          let urlToUse = videoUrl;
+                          if (sourceProxyMode && detail?.episodes && currentEpisodeIndex < detail.episodes.length) {
+                            urlToUse = detail.episodes[currentEpisodeIndex];
+                          }
                           // 使用代理 URL
                           const tokenParam = proxyToken ? `&token=${encodeURIComponent(proxyToken)}` : '';
                           const proxyUrl = externalPlayerAdBlock
-                            ? `${window.location.origin}/api/proxy-m3u8?url=${encodeURIComponent(videoUrl)}&source=${encodeURIComponent(currentSource)}${tokenParam}`
-                            : videoUrl;
+                            ? `${window.location.origin}/api/proxy-m3u8?url=${encodeURIComponent(urlToUse)}&source=${encodeURIComponent(currentSource)}${tokenParam}`
+                            : urlToUse;
                           window.open(`nplayer-${proxyUrl}`, '_blank');
                         }}
                         className='group relative flex items-center justify-center gap-1 w-8 h-8 lg:w-auto lg:h-auto lg:px-2 lg:py-1.5 bg-white hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 text-xs font-medium rounded-md transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer overflow-hidden border border-gray-300 dark:border-gray-600 flex-shrink-0'
@@ -6244,11 +6269,16 @@ function PlayPageClient() {
                       <button
                         onClick={(e) => {
                           e.preventDefault();
+                          // 如果当前是代理播放模式，使用原始 URL；否则使用当前 videoUrl
+                          let urlToUse = videoUrl;
+                          if (sourceProxyMode && detail?.episodes && currentEpisodeIndex < detail.episodes.length) {
+                            urlToUse = detail.episodes[currentEpisodeIndex];
+                          }
                           // 使用代理 URL
                           const tokenParam = proxyToken ? `&token=${encodeURIComponent(proxyToken)}` : '';
                           const proxyUrl = externalPlayerAdBlock
-                            ? `${window.location.origin}/api/proxy-m3u8?url=${encodeURIComponent(videoUrl)}&source=${encodeURIComponent(currentSource)}${tokenParam}`
-                            : videoUrl;
+                            ? `${window.location.origin}/api/proxy-m3u8?url=${encodeURIComponent(urlToUse)}&source=${encodeURIComponent(currentSource)}${tokenParam}`
+                            : urlToUse;
                           window.open(
                             `iina://weblink?url=${encodeURIComponent(
                               proxyUrl
