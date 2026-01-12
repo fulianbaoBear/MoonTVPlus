@@ -1498,10 +1498,14 @@ function PlayPageClient() {
 
     let newUrl = detailData?.episodes[episodeIndex] || '';
 
-    // 如果是小雅接口，先请求获取真实 URL
-    if (newUrl.startsWith('/api/xiaoya/play')) {
+    // 如果是小雅或 openlist 接口，先请求获取真实 URL
+    if (newUrl.startsWith('/api/xiaoya/play') || newUrl.startsWith('/api/openlist/play')) {
       try {
-        const response = await fetch(newUrl);
+        // 添加 format=json 参数
+        const separator = newUrl.includes('?') ? '&' : '?';
+        const fetchUrl = `${newUrl}${separator}format=json`;
+
+        const response = await fetch(fetchUrl);
         const data = await response.json();
         if (data.url) {
           newUrl = data.url;
@@ -1513,11 +1517,11 @@ function PlayPageClient() {
           }
         }
       } catch (error) {
-        console.error('获取小雅播放链接失败:', error);
+        console.error('获取播放链接失败:', error);
         setVideoQualities([]);
       }
     } else {
-      // 非小雅源，清空清晰度列表
+      // 非小雅/openlist 源，清空清晰度列表
       setVideoQualities([]);
     }
 

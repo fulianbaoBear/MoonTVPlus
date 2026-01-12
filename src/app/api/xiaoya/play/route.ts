@@ -58,9 +58,11 @@ async function getFinalUrl(url: string, maxRedirects = 5): Promise<string> {
 }
 
 /**
- * GET /api/xiaoya/play?path=<path>
+ * GET /api/xiaoya/play?path=<path>&format=json
  * 获取小雅视频的播放链接（优先使用视频预览流，失败时降级到直连）
  * path参数为base58编码的路径
+ * format=json: 返回 JSON 格式（用于 play 页面）
+ * 默认: 返回重定向（用于 tvbox 等）
  */
 export async function GET(request: NextRequest) {
   try {
@@ -71,6 +73,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const encodedPath = searchParams.get('path');
+    const format = searchParams.get('format'); // 新增 format 参数
 
     if (!encodedPath) {
       return NextResponse.json({ error: '缺少参数' }, { status: 400 });
@@ -149,18 +152,30 @@ export async function GET(request: NextRequest) {
         throw new Error('未找到已完成的播放链接');
       }
 
-      return NextResponse.json({
-        url: qualities[0].url,
-        qualities
-      });
+      // 如果指定了 format=json，返回 JSON 格式
+      if (format === 'json') {
+        return NextResponse.json({
+          url: qualities[0].url,
+          qualities
+        });
+      }
+
+      // 默认返回重定向（用于 tvbox）
+      return NextResponse.redirect(qualities[0].url);
     } catch (error) {
       // 视频预览流失败，降级到直连方法
       console.log('[xiaoya/play] 视频预览流失败，降级到直连方法:', (error as Error).message);
 
       const playUrl = await client.getDownloadUrl(path);
-      const finalUrl = await getFinalUrl(playUrl);
 
-      return NextResponse.json({ url: finalUrl });
+      // 如果指定了 format=json，使用 getFinalUrl 并返回 JSON
+      if (format === 'json') {
+        const finalUrl = await getFinalUrl(playUrl);
+        return NextResponse.json({ url: finalUrl });
+      }
+
+      // 默认返回重定向（用于 tvbox）
+      return NextResponse.redirect(playUrl);
     }
   } catch (error) {
     return NextResponse.json(
